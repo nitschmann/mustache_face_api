@@ -1,9 +1,8 @@
 <?php
-	//definde path to mustaches
-	define('MUSTACHES', 'public/img/mustaches/');
+	define('DS', DIRECTORY_SEPARATOR);
 	//includes
-	include_once('lib/FaceRestClient.php');
-	include_once('lib/WideImage/WideImage.php');
+	include_once('lib'.DS.'FaceRestClient.php');
+	include_once('lib'.DS.'WideImage'.DS.'WideImage.php');
 
 	class MustacheApi {
 
@@ -13,19 +12,21 @@
 		public $mustache_images;
 
 		public function __construct($api_key, $api_secret) {
+			echo DIRECTORY_SEPARATOR;
 			//Create new FaceRestClient() Instance
 			$this->FaceClient = new FaceRestClient($api_key, $api_secret);
 			//Create new WideImage() Instance
 			$this->WideImage = new WideImage();
 			//Get mustaches
 			$this->mustache_images = array();
-			$dir = opendir(MUSTACHES);
+			$dir_path = __DIR__.DS.'public'.DS.'img'.DS.'mustaches';
+			$dir = opendir($dir_path);
 			$i = 1;
 			while($file = readdir($dir)) {
 				if($file != '.' && $file != '..' && !is_dir($file)) {
 					$type = explode(".",$file);
 					if($type['1'] == 'png') {
-						$this->mustache_images[$i] = MUSTACHES.$file;
+						$this->mustache_images[$i] = $dir_path;
 						//raise $i
 						$i++;
 					}
@@ -36,8 +37,8 @@
 			}
 		}
 
-		public function mustacheFromUrl($url, $mustache_type) {
-			if($url != '' && $mustache_type != '') {
+		public function mustacheFromUrl($url, $mustache_type = 1) {
+			if($url != '') {
 				$face_result = $this->FaceClient->faces_detect($url);
 				//New Image Infos
 				$new_img_info = array(
@@ -47,10 +48,23 @@
 				);
 				//Create new WideImage
 				$new_img = WideImage::load($url)->resize($new_img_info['width'], $new_img_info['height']);
-				$img = $this->mustachePic($new_img, $new_img_info, $face_result, $mustache_type);
-				$img->output('jpg');
+				//Return WideImage Object with mustache
+				return $this->mustachePic($new_img, $new_img_info, $face_result, $mustache_type);
 			}
 			else return false;
+		}
+
+		public function mustachePicHtml($mustache_obj, $w = null, $h = null) {
+			if($mustache_obj != null) {
+				if($w > 0 && $h > 0) $img = $mustache_obj->resize($w, $h);
+				else $img = $mustache_obj;
+				$img = imagecreatefromstring($img->asString('jpg')); 
+
+				$img = base64_encode(WideImage::load($img));
+				$string = 'data:image/jpeg;base64,'.$img;
+				return $string;
+			}
+			else return null;
 		}
 
 		protected function mustachePic($img, $img_info = array(), $face_result = array(), $mustache_type) {
@@ -63,7 +77,7 @@
 				else if($mime = "image/png") $extension = 'png';
 				else if($mime = "image/gif") $extensio = 'gif';
 				
-				//Create new
+				//create new image
 				$img = imagecreatefromstring($img);
 				$img_info = $img_info['type'];
 				
