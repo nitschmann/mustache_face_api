@@ -63,12 +63,9 @@
 				else if($mime = "image/png") $extension = 'png';
 				else if($mime = "image/gif") $extensio = 'gif';
 				
-				//Create new pic in jpeg format
-				$img->saveToFile("new_pic.".$extension);
-				$new_pic = "new_pic.".$extension;
-				$img = imagecreatefromjpeg($new_pic);
-				$img_info = getimagesize($new_pic);
-				unlink($new_pic);
+				//Create new
+				$img = imagecreatefromstring($img);
+				$img_info = $img_info['type'];
 				
 				//mustache type
 				if(is_numeric($mustache_type) && $mustache_type <= count($this->mustache_images)) {
@@ -100,10 +97,11 @@
 					$new_mustache = WideImage::load($mustache)->resize($mouth_w, $mouth_h)->rotate($rotation);
 					
 					//create new and modified mustache
-					$new_mustache->saveToFile("new_mustache.png");
-					$mustache_img = imagecreatefrompng("new_mustache.png");
-					$mustache_new_info = getimagesize("new_mustache.png");
-					unlink("new_mustache.png");
+					$mustache_img = imagecreatefromstring($new_mustache->asString('png'));
+					$mustache_new_info = array(
+						'w' => imagesx($mustache_img),
+						'h' => imagesy($mustache_img)
+					);
 					
 					//mustache position on pic
 					$des_x = ($tag['mouth_left']['x']*($img_info[0]/100))-8;
@@ -123,7 +121,7 @@
 					}
 						
 					//insert mustaches on pic
-					imagecopy($img, $mustache_img, $des_x, $des_y, 0, 0, $mustache_new_info[0], $mustache_new_info[1]);
+					imagecopy($img, $mustache_img, $des_x, $des_y, 0, 0, $mustache_new_info['w'], $mustache_new_info['h']);
 				}
 				//change pic in jpeg format and return a WideImage Object
 				return WideImage::load($img);
