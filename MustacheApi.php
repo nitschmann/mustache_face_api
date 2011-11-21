@@ -24,7 +24,7 @@
 			while($file = readdir($dir)) {
 				if($file != '.' && $file != '..' && !is_dir($file)) {
 					$type = explode(".",$file);
-					if($type['1'] == 'png' || $type['1'] == 'gif') {
+					if($type['1'] == 'png') {
 						$this->mustache_images[$i] = MUSTACHES.$file;
 						//raise $i
 						$i++;
@@ -36,17 +36,100 @@
 			}
 		}
 
-		public function mustacheFromUrl($url, $mustache) {
-			$face_result = $this->FaceClient->faces_detect($url);
-			//New Image Infos
-			$new_img_info = array(
-				'width' => $face_result['photos']['0']['width'],
-				'height' => $face_result['photos']['0']['height']
-			);
-
-			$new_img = WideImage::load($url)->resize($new_img_info['width'], $new_img_info['height']);
-			$new_img->output('jpg');
+		public function mustacheFromUrl($url, $mustache_type) {
+			if($url != '' && $mustache_type != '') {
+				$face_result = $this->FaceClient->faces_detect($url);
+				//New Image Infos
+				$new_img_info = array(
+					'width' => $face_result['photos']['0']['width'],
+					'height' => $face_result['photos']['0']['height'],
+					'type' => getimagesize($url)
+				);
+				//Create new WideImage
+				$new_img = WideImage::load($url)->resize($new_img_info['width'], $new_img_info['height']);
+				$img = $this->mustachePic($new_img, $new_img_info, $face_result, $mustache_type);
+				$img->output('jpg');
+			}
+			else return false;
 		}
+
+		protected function mustachePic($img, $img_info = array(), $face_result = array(), $mustache_type) {
+			if($img != '' && is_array($img_info) && is_array($face_result) && $mustache_type != '') {
+				$mime = $img_info['type']['mime'];
+				
+				//Create pic extension based $mime
+				$extension;
+				if($mime = "image/jpeg") $extension = 'jpeg';
+				else if($mime = "image/png") $extension = 'png';
+				else if($mime = "image/gif") $extensio = 'gif';
+				
+				//Create new pic in jpeg format
+				$img->saveToFile("new_pic.".$extension);
+				$new_pic = "new_pic.".$extension;
+				$img = imagecreatefromjpeg($new_pic);
+				$img_info = getimagesize($new_pic);
+				unlink($new_pic);
+				
+				//mustache type
+				if(is_numeric($mustache_type) && $mustache_type <= count($this->mustache_images)) {
+					$mustache = $this->mustache_images[$mustache_type];
+				}
+				else {
+					if($mustache_type == 'r' || $mustache_type > count($this->mustache_images)) {
+						$r = rand(1, count($this->mustache_images));
+						$mustache = $this->mustache_images[$r];
+					}
+					else $mustache = $this->mustache_images[$r]; 
+				} 
+				$mustache_info = getimagesize($mustache);
+
+				//faces
+				$tags = $face_result['photos']['0']['tags'];
+				foreach($tags as $tag) {
+					//resize and rotate each mustache
+					$x_r = round($tag['mouth_right']['x']);
+					$x_l = round($tag['mouth_left']['x']);
+					
+					$mouth_w = ((($x_r-$x_l)*($img_info['0']/100))+20);
+		
+					$new_mustache_p = round($mouth_w/($mustache_info['0']/100));
+					$mouth_h = ($mustache_info['1']/100)*$new_mustache_p;
+
+					$rotation = $tag['roll'];
+
+					$new_mustache = WideImage::load($mustache)->resize($mouth_w, $mouth_h)->rotate($rotation);
+					
+					//create new and modified mustache
+					$new_mustache->saveToFile("new_mustache.png");
+					$mustache_img = imagecreatefrompng("new_mustache.png");
+					$mustache_new_info = getimagesize("new_mustache.png");
+					unlink("new_mustache.png");
+					
+					//mustache position on pic
+					$des_x = ($tag['mouth_left']['x']*($img_info[0]/100))-8;
+					
+					$des_y;
+
+					if($tag['mouth_left']['y'] > $tag['mouth_center']['y'] || $tag['mouth_right']['y'] > $tag['mouth_center']['y']) {
+						if($tag['mouth_left']['y'] > $tag['mouth_right']['y']) {
+							$des_y = (($tag['mouth_left']['y']-(($tag['mouth_left']['y']-$tag['nose']['y'])/1.2))*($img_info[1]/100));
+						}
+						else {
+							$des_y = (($tag['mouth_right']['y']-(($tag['mouth_left']['y']-$tag['nose']['y'])/1.2))*($img_info[1]/100));
+						}
+					}
+					else {
+						$des_y = (($tag['mouth_center']['y']-(($tag['mouth_left']['y']-$tag['nose']['y'])/1.2))*($img_info[1]/100));
+					}
+						
+					//insert mustaches on pic
+					imagecopy($img, $mustache_img, $des_x, $des_y, 0, 0, $mustache_new_info[0], $mustache_new_info[1]);
+				}
+				//change pic in jpeg format and return a WideImage Object
+				return WideImage::load($img);
+ 			}
+			else return false;
+		} 
 
 		
 	}
