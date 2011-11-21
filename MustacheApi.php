@@ -37,13 +37,15 @@
 		}
 
 		public function mustacheFromUrl($url, $mustache) {
-			$img = $url;
-			$face_result = $this->FaceClient->faces_detect($img);
+			$face_result = $this->FaceClient->faces_detect($url);
 			//New Image Infos
 			$new_img_info = array(
 				'width' => $face_result['photos']['0']['width'],
 				'height' => $face_result['photos']['0']['height']
 			);
+
+			$new_img = WideImage::load($url)->resize($new_img_info['width'], $new_img_info['height']);
+			$new_img->output('jpg');
 		}
 
 		
