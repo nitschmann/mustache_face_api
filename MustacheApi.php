@@ -1,8 +1,10 @@
 <?php
+	//definde path to mustaches
+	define('MUSTACHES', 'public/img/mustaches/');
 	define('DS', DIRECTORY_SEPARATOR);
 	//includes
-	include_once('lib'.DS.'FaceRestClient.php');
-	include_once('lib'.DS.'WideImage'.DS.'WideImage.php');
+	include_once('lib/FaceRestClient.php');
+	include_once('lib/WideImage/WideImage.php');
 
 	class MustacheApi {
 
@@ -12,21 +14,19 @@
 		public $mustache_images;
 
 		public function __construct($api_key, $api_secret) {
-			echo DIRECTORY_SEPARATOR;
 			//Create new FaceRestClient() Instance
 			$this->FaceClient = new FaceRestClient($api_key, $api_secret);
 			//Create new WideImage() Instance
 			$this->WideImage = new WideImage();
 			//Get mustaches
 			$this->mustache_images = array();
-			$dir_path = __DIR__.DS.'public'.DS.'img'.DS.'mustaches';
-			$dir = opendir($dir_path);
+			$dir = opendir(MUSTACHES);
 			$i = 1;
 			while($file = readdir($dir)) {
 				if($file != '.' && $file != '..' && !is_dir($file)) {
 					$type = explode(".",$file);
 					if($type['1'] == 'png') {
-						$this->mustache_images[$i] = $dir_path;
+						$this->mustache_images[$i] = MUSTACHES.$file;
 						//raise $i
 						$i++;
 					}
