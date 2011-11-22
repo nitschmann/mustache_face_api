@@ -75,7 +75,7 @@
 				$extension;
 				if($mime = "image/jpeg") $extension = 'jpeg';
 				else if($mime = "image/png") $extension = 'png';
-				else if($mime = "image/gif") $extensio = 'gif';
+				else if($mime = "image/gif") $extension = 'gif';
 				
 				//create new image
 				$img = imagecreatefromstring($img);
