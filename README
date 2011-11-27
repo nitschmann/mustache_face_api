@@ -1,1 +1,10 @@
-This is a PHP libary that mustaches every face in a picture checked through the face.com API
+Mustache Face API - A PHP Class libary to create mustaches on faces in every image
+
+A PHP libary that creates mustaches on every face in a picture checked through the face.com API. 
+It uses the WideImage PHP Libary (http://wideimage.sourceforge.net/) and Face.com Rest API PHP Library.
+
+@author Florian Nitschmann (info@florian-nitschmann.de)
+@links www.florian-nitschmann.de
+@copyright (C) 2011 Florian Nitschmann
+@license MIT License (http://www.opensource.org/licenses/mit-license.php)  
+
