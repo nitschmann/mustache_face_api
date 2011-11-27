@@ -1,7 +1,19 @@
 <?php
-	//definde path to mustaches
+	/*
+	 * Mustache Face API - A PHP Class libary to create mustaches on faces in every image
+	 *
+	 * A PHP libary that creates mustaches on every face in a picture checked through the face.com API. 
+	 * It uses the WideImage PHP Libary (http://wideimage.sourceforge.net/) and Face.com Rest API PHP Library.
+	 *
+	 * @author Florian Nitschmann (info@florian-nitschmann.de)
+	 * @links www.florian-nitschmann.de
+	 * @copyright (C) 2011 Florian Nitschmann
+	 * @license MIT License (http://www.opensource.org/licenses/mit-license.php)  
+	 */
+	//Define path to mustache images
 	define('MUSTACHES', 'public/img/mustaches/');
-	define('DS', DIRECTORY_SEPARATOR);
+	//Check for GD-Libary
+	if(!function_exists('gd_info')) throw new Exception('Mustache Face API requires the PHP GD extension.');
 	//includes
 	include_once('lib/FaceRestClient.php');
 	include_once('lib/WideImage/WideImage.php');
@@ -12,6 +24,7 @@
 		private $WideImage;
 		//Mustache images
 		public $mustache_images;
+
 
 		public function __construct($api_key, $api_secret) {
 			//Create new FaceRestClient() Instance
@@ -37,6 +50,7 @@
 			}
 		}
 
+		
 		public function mustacheFromUrl($url, $mustache_type = 1) {
 			if($url != '') {
 				$face_result = $this->FaceClient->faces_detect($url);
@@ -53,6 +67,7 @@
 			}
 			else return false;
 		}
+		
 
 		public function mustachePicHtml($mustache_obj, $w = null, $h = null) {
 			if($mustache_obj != null) {
@@ -66,6 +81,18 @@
 			}
 			else return null;
 		}
+
+
+		public function mustacheOutputPic($mustache_obj, $w = null, $h = null) {
+			if($mustache_obj != null) {
+				if($w > 0 && $h > 0) $img = $mustache_obj->resize($w, $h);
+				else $img = $mustache_obj;
+				//output image as jpeg
+				$img->output('jpg');
+			}
+			else return null; 
+		}
+
 
 		protected function mustachePic($img, $img_info = array(), $face_result = array(), $mustache_type) {
 			if($img != '' && is_array($img_info) && is_array($face_result) && $mustache_type != '') {
