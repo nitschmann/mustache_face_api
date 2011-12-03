@@ -10,8 +10,6 @@
 	 * @copyright (C) 2011 Florian Nitschmann
 	 * @license MIT License (http://www.opensource.org/licenses/mit-license.php)  
 	 */
-	//Define path to mustache images
-	define('MUSTACHES', 'public/img/mustaches/');
 	//Check for GD-Libary
 	if(!function_exists('gd_info')) throw new Exception('Mustache Face API requires the PHP GD extension.');
 	//includes
@@ -26,20 +24,24 @@
 		public $mustache_images;
 
 
-		public function __construct($api_key, $api_secret) {
+		public function __construct($api_key, $api_secret, $image_folder = null) {
 			//Create new FaceRestClient() Instance
 			$this->FaceClient = new FaceRestClient($api_key, $api_secret);
 			//Create new WideImage() Instance
 			$this->WideImage = new WideImage();
 			//Get mustaches
 			$this->mustache_images = array();
-			$dir = opendir(MUSTACHES);
+			//Folder with mustache images
+			if($image_folder == null) $path = dirname(__FILE__).DS.'public'.DS.'img'.DS.'mustaches'; 
+			else $path = $image_folder;
+
+			$dir = opendir($path);
 			$i = 1;
 			while($file = readdir($dir)) {
 				if($file != '.' && $file != '..' && !is_dir($file)) {
 					$type = explode(".",$file);
 					if($type['1'] == 'png') {
-						$this->mustache_images[$i] = MUSTACHES.$file;
+						$this->mustache_images[$i] = $path.$file;
 						//raise $i
 						$i++;
 					}
