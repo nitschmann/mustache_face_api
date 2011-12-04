@@ -4,7 +4,8 @@ A PHP libary that creates mustaches on every face in a picture checked through t
 It uses the WideImage PHP Libary (http://wideimage.sourceforge.net/) and Face.com Rest API PHP Library.
 
 @author Florian Nitschmann (info@florian-nitschmann.de)
+@date 04-12-11 9:00:00pm
 @links www.florian-nitschmann.de
 @copyright (C) 2011 Florian Nitschmann
 @license MIT License (http://www.opensource.org/licenses/mit-license.php)  
-
+@version 2.0 
